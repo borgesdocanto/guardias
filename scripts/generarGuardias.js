@@ -28,12 +28,18 @@ async function getAgentes() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
   const rows = csv.split("\n").map(r => r.split(",").map(c => c.trim()));
-  rows.shift(); // sacar encabezado
 
-  return rows
-    .filter(r => r[0] === "TRUE") // Col A = TRUE → hace guardias
-    .map(r => r[1])               // Col B = nombre
+  rows.shift(); // quitar encabezado
+
+  const agentes = rows
+    .filter(r => {
+      const check = (r[0] || "").toUpperCase();
+      return check === "TRUE" || check === "SI" || check === "1"; // aceptar varias formas
+    })
+    .map(r => r[1]) // Col B = nombre
     .filter(Boolean);
+
+  return agentes;
 }
 
 // 📅 Generar calendario del próximo mes
@@ -97,6 +103,8 @@ async function main() {
     console.error("❌ No hay agentes disponibles en el sheet");
     process.exit(1);
   }
+
+  console.log("✅ Agentes detectados:", agentes);
 
   const guardias = generarGuardias(agentes, feriados, mes, anio);
 
