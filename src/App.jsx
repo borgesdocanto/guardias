@@ -1,12 +1,10 @@
 import React from "react";
-import GuardiasApp from "./GuardiasApp";
+import GuardiasApp from "./GuardiasApp.jsx";
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <GuardiasApp />
     </div>
   );
 }
-
-export default App;
