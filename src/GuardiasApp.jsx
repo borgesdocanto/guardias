@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 function GuardiasApp() {
   const [guardias, setGuardias] = useState({});
-  const [mesActual, setMesActual] = useState(new Date());
+  const [fecha, setFecha] = useState(new Date());
 
   useEffect(() => {
     fetch("/guardias.json")
@@ -11,115 +11,109 @@ function GuardiasApp() {
       .catch((err) => console.error("Error cargando guardias:", err));
   }, []);
 
-  const cambiarMes = (delta) => {
-    setMesActual((prev) => {
-      const nuevo = new Date(prev);
-      nuevo.setMonth(nuevo.getMonth() + delta);
-      return nuevo;
-    });
+  const mesClave = `${fecha.getFullYear()}-${String(
+    fecha.getMonth() + 1
+  ).padStart(2, "0")}`;
+  const guardiasMes = guardias[mesClave] || {};
+
+  const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+  const inicioMes = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
+  const finMes = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0);
+  const primerDiaSemana = (inicioMes.getDay() + 6) % 7;
+  const diasMes = finMes.getDate();
+
+  const handlePrevMonth = () => {
+    setFecha(new Date(fecha.getFullYear(), fecha.getMonth() - 1, 1));
   };
 
-  const renderCalendario = () => {
-    const year = mesActual.getFullYear();
-    const month = mesActual.getMonth();
-    const diasEnMes = new Date(year, month + 1, 0).getDate();
-    const primerDiaSemana = new Date(year, month, 1).getDay();
-    const offset = (primerDiaSemana + 6) % 7; // lunes=0, domingo=6
+  const handleNextMonth = () => {
+    setFecha(new Date(fecha.getFullYear(), fecha.getMonth() + 1, 1));
+  };
 
-    const claveMes = `${year}-${String(month + 1).padStart(2, "0")}`;
-    const guardiasMes = guardias[claveMes] || {};
-
+  const renderCeldas = () => {
     const celdas = [];
-    for (let i = 0; i < offset; i++) celdas.push(null);
-    for (let dia = 1; dia <= diasEnMes; dia++) {
-      const claveDia = `${year}-${String(month + 1).padStart(2, "0")}-${String(
-        dia
-      ).padStart(2, "0")}`;
-      celdas.push({
-        dia,
-        nombres: guardiasMes[claveDia] || [],
-      });
+
+    for (let i = 0; i < primerDiaSemana; i++) {
+      celdas.push(
+        <div
+          key={`empty-${i}`}
+          className="border rounded-xl min-h-[120px] bg-gray-100"
+        />
+      );
     }
-    while (celdas.length % 7 !== 0) celdas.push(null);
 
-    return (
-      <div className="grid grid-cols-7 gap-px bg-gray-300 rounded-lg overflow-hidden shadow-lg">
-        {/* encabezados */}
-        {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d) => (
-          <div
-            key={d}
-            className="bg-gray-200 text-center font-semibold py-2 text-sm"
-          >
-            {d}
+    for (let d = 1; d <= diasMes; d++) {
+      const claveDia = `${fecha.getFullYear()}-${String(
+        fecha.getMonth() + 1
+      ).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const guardiasDia = guardiasMes[claveDia] || [];
+
+      celdas.push(
+        <div
+          key={d}
+          className="border rounded-xl p-3 min-h-[120px] bg-white hover:bg-gray-50 transition flex flex-col"
+        >
+          <div className="font-bold text-gray-800 mb-2">{d}</div>
+          <div className="flex flex-col gap-1">
+            {guardiasDia.length > 0 ? (
+              guardiasDia.map((g, i) => (
+                <div
+                  key={i}
+                  className="bg-marca/10 text-marca px-2 py-1 rounded-md text-sm font-medium"
+                >
+                  {g}
+                </div>
+              ))
+            ) : (
+              <span className="text-gray-400 text-xs">-</span>
+            )}
           </div>
-        ))}
+        </div>
+      );
+    }
 
-        {/* celdas */}
-        {celdas.map((celda, i) => {
-          const esFinde = i % 7 === 5 || i % 7 === 6;
-          return (
-            <div
-              key={i}
-              className={`h-28 bg-white p-2 flex flex-col border border-gray-200 ${
-                esFinde ? "bg-gray-50" : ""
-              }`}
-            >
-              {celda ? (
-                <>
-                  <div className="text-xs font-bold text-gray-600 text-right">
-                    {celda.dia}
-                  </div>
-                  <div className="mt-1 space-y-1 text-xs overflow-hidden">
-                    {celda.nombres.length > 0 ? (
-                      celda.nombres.map((n, j) => (
-                        <div
-                          key={j}
-                          className="truncate bg-blue-100 text-blue-700 px-1 rounded"
-                        >
-                          {n}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-gray-300">-</div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1"></div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
+    return celdas;
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Sistema de Guardias</h1>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-10">
+      <h1 className="text-4xl font-extrabold text-marca mb-6 drop-shadow-md">
+        Sistema de Guardias
+      </h1>
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex items-center justify-between w-full max-w-6xl mb-6">
         <button
-          onClick={() => cambiarMes(-1)}
-          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+          onClick={handlePrevMonth}
+          className="flex items-center gap-2 bg-marca text-white px-6 py-3 rounded-lg shadow hover:bg-red-800 transition text-lg"
         >
-          ◀️ Mes Anterior
+          ◀ Mes Anterior
         </button>
-        <h2 className="font-semibold text-xl capitalize">
-          {mesActual.toLocaleDateString("es-AR", {
-            month: "long",
+        <h2 className="text-3xl font-bold capitalize">
+          {fecha.toLocaleDateString("es-ES", {
             year: "numeric",
+            month: "long",
           })}
         </h2>
         <button
-          onClick={() => cambiarMes(1)}
-          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+          onClick={handleNextMonth}
+          className="flex items-center gap-2 bg-marca text-white px-6 py-3 rounded-lg shadow hover:bg-red-800 transition text-lg"
         >
-          Mes Siguiente ▶️
+          Mes Siguiente ▶
         </button>
       </div>
 
-      {renderCalendario()}
+      <div className="grid grid-cols-7 gap-3 bg-white p-6 rounded-2xl shadow-2xl w-full max-w-6xl text-lg">
+        {diasSemana.map((dia, i) => (
+          <div
+            key={i}
+            className="font-semibold text-center text-marca border-b pb-2"
+          >
+            {dia}
+          </div>
+        ))}
+        {renderCeldas()}
+      </div>
     </div>
   );
 }
