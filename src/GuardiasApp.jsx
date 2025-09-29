@@ -1,91 +1,129 @@
+// src/GuardiasApp.jsx
 import React, { useEffect, useState } from "react";
 
-function GuardiasApp() {
-  const [guardias, setGuardias] = useState(null);
-  const [mesActual, setMesActual] = useState(new Date().getMonth() + 1);
-  const [anioActual, setAnioActual] = useState(new Date().getFullYear());
+const GuardiasApp = () => {
+  const [guardias, setGuardias] = useState({});
+  const [mesActual, setMesActual] = useState(() => {
+    const hoy = new Date();
+    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
+  });
 
+  // Cargar el JSON de guardias
   useEffect(() => {
     fetch("/guardias.json")
       .then((res) => res.json())
       .then((data) => setGuardias(data))
-      .catch((err) => console.error("Error cargando guardias:", err));
+      .catch((err) => console.error("Error cargando guardias.json", err));
   }, []);
 
-  if (!guardias) {
-    return <div className="p-4">⏳ Cargando guardias...</div>;
-  }
+  // Helpers
+  const obtenerDiasDelMes = (year, month) => {
+    const date = new Date(year, month, 1);
+    const days = [];
+    while (date.getMonth() === month) {
+      days.push(new Date(date));
+      date.setDate(date.getDate() + 1);
+    }
+    return days;
+  };
 
-  // clave tipo "2025-10"
-  const clave = `${anioActual}-${mesActual.toString().padStart(2, "0")}`;
-  const mesData = guardias[clave] || {};
+  const mostrarMes = (offset = 0) => {
+    const [y, m] = mesActual.split("-").map(Number);
+    const fecha = new Date(y, m - 1 + offset, 1);
+    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
+  };
 
-  // calcular primer y último día del mes
-  const firstDay = new Date(anioActual, mesActual - 1, 1);
-  const lastDay = new Date(anioActual, mesActual, 0);
+  const cambiarMes = (offset) => {
+    setMesActual(mostrarMes(offset));
+  };
 
-  // armar array de días del mes con padding al inicio
-  const days = [];
-  for (let i = 0; i < firstDay.getDay(); i++) {
-    days.push(null); // huecos antes del día 1
-  }
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const dateStr = `${anioActual}-${mesActual
-      .toString()
-      .padStart(2, "0")}-${d.toString().padStart(2, "0")}`;
-    days.push({
-      date: dateStr,
-      agentes: mesData[dateStr] || [],
-    });
-  }
+  // Render calendario
+  const renderCalendario = (mes) => {
+    const [year, month] = mes.split("-").map(Number);
+    const dias = obtenerDiasDelMes(year, month - 1);
 
-  const semanas = [];
-  for (let i = 0; i < days.length; i += 7) {
-    semanas.push(days.slice(i, i + 7));
-  }
+    // Primer día de la semana (lunes=1, domingo=0)
+    const inicioSemana = (dias[0].getDay() + 6) % 7;
+    const celdasVaciasInicio = Array(inicioSemana).fill(null);
 
-  const nombreMes = firstDay.toLocaleDateString("es-AR", {
-    month: "long",
-    year: "numeric",
-  });
+    const totalCeldas = celdasVaciasInicio.length + dias.length;
+    const celdasExtra = (7 - (totalCeldas % 7)) % 7;
+
+    const celdas = [...celdasVaciasInicio, ...dias, ...Array(celdasExtra).fill(null)];
+
+    return (
+      <div className="grid grid-cols-7 gap-2">
+        {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d) => (
+          <div key={d} className="font-bold text-center text-gray-700">
+            {d}
+          </div>
+        ))}
+
+        {celdas.map((dia, idx) => {
+          if (!dia) return <div key={idx} className="border rounded-lg h-24 bg-gray-50"></div>;
+
+          const fechaKey = `${year}-${String(month).padStart(2, "0")}-${String(
+            dia.getDate()
+          ).padStart(2, "0")}`;
+
+          const guardiasDia = guardias[mes]?.[fechaKey] || [];
+
+          return (
+            <div
+              key={idx}
+              className="border rounded-lg h-24 p-1 bg-white flex flex-col text-xs"
+            >
+              <div className="font-semibold text-gray-800 text-right">{dia.getDate()}</div>
+              <div className="mt-1 flex-1 space-y-1 overflow-hidden">
+                {guardiasDia.length > 0 ? (
+                  guardiasDia.map((g, i) => (
+                    <div key={i} className="truncate text-gray-600">
+                      {g}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-300 italic">-</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4 text-center">
-        📅 Guardias – {nombreMes}
-      </h1>
-      <div className="grid grid-cols-7 gap-2 text-center font-semibold">
-        <div>Lun</div>
-        <div>Mar</div>
-        <div>Mié</div>
-        <div>Jue</div>
-        <div>Vie</div>
-        <div>Sáb</div>
-        <div>Dom</div>
-      </div>
-      {semanas.map((semana, i) => (
-        <div key={i} className="grid grid-cols-7 gap-2 text-sm mb-2">
-          {semana.map((dia, j) =>
-            dia ? (
-              <div
-                key={j}
-                className="border rounded p-1 bg-white shadow-sm h-24 flex flex-col"
-              >
-                <div className="font-bold">{new Date(dia.date).getDate()}</div>
-                <div className="text-xs flex-1">
-                  {dia.agentes.map((a, idx) => (
-                    <div key={idx}>{a}</div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div key={j}></div>
-            )
-          )}
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 className="text-3xl font-bold text-center mb-6 text-[#AA0000]">
+          Sistema de Guardias
+        </h1>
+
+        <div className="flex justify-between mb-4">
+          <button
+            onClick={() => cambiarMes(-1)}
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            ◀ Mes Anterior
+          </button>
+          <h2 className="text-xl font-semibold">
+            {new Date(mesActual + "-01").toLocaleDateString("es-AR", {
+              month: "long",
+              year: "numeric",
+            })}
+          </h2>
+          <button
+            onClick={() => cambiarMes(1)}
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Mes Siguiente ▶
+          </button>
         </div>
-      ))}
+
+        {renderCalendario(mesActual)}
+      </div>
     </div>
   );
-}
+};
 
 export default GuardiasApp;
