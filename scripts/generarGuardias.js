@@ -1,100 +1,117 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import fetch from "node-fetch";
-import { getAgentes } from "./leerSheet.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PUBLIC_DIR = path.join(__dirname, "../public/guardias");
+const __dirname = path.resolve();
 
-// === Helpers ===
-function diasEnMes(mes, año) {
-  return new Date(año, mes, 0).getDate();
-}
+// ✅ URL de tu Google Sheet en CSV (usando el Secret en GitHub Actions)
+const SHEET_URL = process.env.SHEET_URL;
 
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+// ✅ Archivo donde vamos a guardar las guardias
+const OUTPUT_FILE = path.join(__dirname, "public", "guardias.json");
 
-async function obtenerFeriados(año) {
+// 📅 Obtener feriados de Argentina desde API
+async function getFeriados(year) {
   try {
-    const resp = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${año}/AR`);
-    if (!resp.ok) throw new Error("API no disponible");
-    const data = await resp.json();
-    return data.map(f => f.date); // fechas "YYYY-MM-DD"
-  } catch (err) {
-    console.warn("⚠️ API de feriados no disponible, seguimos sin feriados.");
+    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/AR`);
+    if (!res.ok) throw new Error("No se pudo acceder a la API de feriados");
+    const data = await res.json();
+    return data.map(f => f.date); // lista de fechas en formato YYYY-MM-DD
+  } catch (e) {
+    console.warn("⚠️ No se pudieron cargar feriados, seguimos sin ellos.");
     return [];
   }
 }
 
-// === Generador ===
-async function generar() {
-  const sheetUrl = process.env.SHEET_URL;
-  if (!sheetUrl) {
-    console.error("❌ Falta SHEET_URL en secrets/env");
-    process.exit(1);
-  }
+// 📋 Leer agentes desde Google Sheets
+async function getAgentes() {
+  const res = await fetch(SHEET_URL);
+  const csv = await res.text();
+  const rows = csv.split("\n").map(r => r.split(",").map(c => c.trim()));
+  rows.shift(); // sacar encabezado
 
-  const hoy = new Date();
-  let mesProx = hoy.getMonth() + 2; // mes próximo (1-based)
-  let añoProx = hoy.getFullYear();
-  if (mesProx > 12) {
-    mesProx = 1;
-    añoProx++;
-  }
-
-  const agentes = await getAgentes(sheetUrl);
-  if (agentes.length < 2) {
-    console.error("❌ No hay agentes suficientes.");
-    process.exit(1);
-  }
-
-  const feriados = await obtenerFeriados(añoProx);
-  const totalDias = diasEnMes(mesProx, añoProx);
-
-  const guardias = {};
-  const diasValidos = [];
-
-  for (let d = 1; d <= totalDias; d++) {
-    const fecha = new Date(añoProx, mesProx - 1, d);
-    const iso = fecha.toISOString().split("T")[0];
-    const dow = fecha.getDay(); // 0=Dom,6=Sab
-
-    if (dow === 0) continue;        // no domingos
-    if (feriados.includes(iso)) continue; // no feriados
-
-    diasValidos.push(iso);
-  }
-
-  // total guardias
-  const totalGuardias = diasValidos.length * 2;
-  const porAgente = Math.floor(totalGuardias / agentes.length);
-
-  let pool = [];
-  agentes.forEach(a => {
-    for (let i = 0; i < porAgente; i++) pool.push(a);
-  });
-  // si sobran guardias, repartir extras
-  while (pool.length < totalGuardias) {
-    pool.push(agentes[Math.floor(Math.random() * agentes.length)]);
-  }
-
-  shuffle(pool);
-
-  diasValidos.forEach(dia => {
-    guardias[dia] = [pool.pop(), pool.pop()];
-  });
-
-  if (!fs.existsSync(PUBLIC_DIR)) fs.mkdirSync(PUBLIC_DIR, { recursive: true });
-
-  const filePath = path.join(PUBLIC_DIR, `guardias-${añoProx}-${String(mesProx).padStart(2,"0")}.json`);
-  fs.writeFileSync(filePath, JSON.stringify(guardias, null, 2));
-  console.log("✅ Guardias generadas:", filePath);
+  return rows
+    .filter(r => r[0] === "TRUE") // Col A = TRUE → hace guardias
+    .map(r => r[1])               // Col B = nombre
+    .filter(Boolean);
 }
 
-generar();
+// 📅 Generar calendario del próximo mes
+function getProximoMes() {
+  const hoy = new Date();
+  const mes = hoy.getMonth();
+  const anio = hoy.getFullYear();
+
+  let targetMes = mes + 1;
+  let targetAnio = anio;
+
+  if (targetMes > 11) {
+    targetMes = 0;
+    targetAnio++;
+  }
+
+  return { mes: targetMes, anio: targetAnio };
+}
+
+// 🎲 Asignar guardias equitativas
+function generarGuardias(agentes, feriados, mes, anio) {
+  const inicio = new Date(anio, mes, 1);
+  const fin = new Date(anio, mes + 1, 0);
+
+  const diasMes = [];
+  for (let d = new Date(inicio); d <= fin; d.setDate(d.getDate() + 1)) {
+    const iso = d.toISOString().split("T")[0];
+    const esFeriado = feriados.includes(iso);
+    const diaSemana = d.getDay(); // 0=Dom, 6=Sab
+    if (diaSemana === 0) continue; // excluir domingos
+    if (esFeriado) continue; // excluir feriados
+
+    diasMes.push(new Date(d));
+  }
+
+  // repartir agentes equitativamente
+  let indice = 0;
+  const guardias = {};
+
+  diasMes.forEach(dia => {
+    const fechaStr = dia.toISOString().split("T")[0];
+    guardias[fechaStr] = [
+      agentes[indice % agentes.length],
+      agentes[(indice + 1) % agentes.length],
+    ];
+    indice += 2;
+  });
+
+  return guardias;
+}
+
+// 🚀 Main
+async function main() {
+  console.log("⏳ Generando guardias...");
+
+  const { mes, anio } = getProximoMes();
+  const agentes = await getAgentes();
+  const feriados = await getFeriados(anio);
+
+  if (agentes.length === 0) {
+    console.error("❌ No hay agentes disponibles en el sheet");
+    process.exit(1);
+  }
+
+  const guardias = generarGuardias(agentes, feriados, mes, anio);
+
+  // leer guardias existentes
+  let data = {};
+  if (fs.existsSync(OUTPUT_FILE)) {
+    data = JSON.parse(fs.readFileSync(OUTPUT_FILE, "utf8"));
+  }
+
+  // guardar sin borrar meses anteriores
+  data[`${anio}-${String(mes + 1).padStart(2, "0")}`] = guardias;
+
+  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(data, null, 2));
+
+  console.log(`✅ Guardias generadas para ${mes + 1}/${anio}`);
+}
+
+main();
