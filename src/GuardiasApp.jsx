@@ -1,4 +1,3 @@
-// src/GuardiasApp.jsx
 import React, { useEffect, useState } from "react";
 
 function GuardiasApp() {
@@ -25,7 +24,7 @@ function GuardiasApp() {
     const month = mesActual.getMonth();
     const diasEnMes = new Date(year, month + 1, 0).getDate();
     const primerDiaSemana = new Date(year, month, 1).getDay();
-    const offset = (primerDiaSemana + 6) % 7; // Lunes=0, Domingo=6
+    const offset = (primerDiaSemana + 6) % 7; // lunes=0, domingo=6
 
     const claveMes = `${year}-${String(month + 1).padStart(2, "0")}`;
     const guardiasMes = guardias[claveMes] || {};
@@ -45,6 +44,7 @@ function GuardiasApp() {
 
     return (
       <div className="grid grid-cols-7 gap-px bg-gray-300 rounded-lg overflow-hidden shadow-lg">
+        {/* encabezados */}
         {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d) => (
           <div
             key={d}
@@ -53,6 +53,8 @@ function GuardiasApp() {
             {d}
           </div>
         ))}
+
+        {/* celdas */}
         {celdas.map((celda, i) => {
           const esFinde = i % 7 === 5 || i % 7 === 6;
           return (
@@ -93,10 +95,9 @@ function GuardiasApp() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        Sistema de Guardias
-      </h1>
+    <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center">Sistema de Guardias</h1>
+
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => cambiarMes(-1)}
@@ -117,6 +118,7 @@ function GuardiasApp() {
           Mes Siguiente ▶️
         </button>
       </div>
+
       {renderCalendario()}
     </div>
   );
