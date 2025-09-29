@@ -2,8 +2,8 @@ name: Generar Guardias
 
 on:
   schedule:
-    - cron: "0 8 25 * *"   # cada 25 del mes a las 08:00 UTC (05:00 ARG)
-  workflow_dispatch:       # también se puede lanzar manualmente
+    - cron: "0 8 25 * *" # corre el día 25 de cada mes a las 08:00 UTC
+  workflow_dispatch: # permite correrlo manualmente desde GitHub
 
 jobs:
   build:
@@ -13,23 +13,23 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Instalar dependencias
+      - name: Install dependencies
         run: npm install
 
-      - name: Generar guardias del mes próximo
+      - name: Generar guardias
         run: node scripts/generarGuardias.js
         env:
           SHEET_URL: ${{ secrets.SHEET_URL }}
 
-      - name: Commit y push de guardias
+      - name: Commit & push cambios
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git add public/guardias/
-          git commit -m "Actualizar guardias automáticas"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/guardias.json
+          git commit -m "🚀 Guardias generadas automáticamente"
           git push
