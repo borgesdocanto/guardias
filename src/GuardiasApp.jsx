@@ -8,9 +8,7 @@ function GuardiasApp() {
   useEffect(() => {
     fetch("/guardias.json")
       .then((res) => res.json())
-      .then((data) => {
-        setGuardias(data);
-      })
+      .then((data) => setGuardias(data))
       .catch((err) => console.error("Error cargando guardias:", err));
   }, []);
 
@@ -18,40 +16,74 @@ function GuardiasApp() {
     return <div className="p-4">⏳ Cargando guardias...</div>;
   }
 
-  // la clave ahora es YYYY-MM
+  // clave tipo "2025-10"
   const clave = `${anioActual}-${mesActual.toString().padStart(2, "0")}`;
   const mesData = guardias[clave] || {};
 
-  const dias = Object.keys(mesData).sort();
+  // calcular primer y último día del mes
+  const firstDay = new Date(anioActual, mesActual - 1, 1);
+  const lastDay = new Date(anioActual, mesActual, 0);
+
+  // armar array de días del mes con padding al inicio
+  const days = [];
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    days.push(null); // huecos antes del día 1
+  }
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateStr = `${anioActual}-${mesActual
+      .toString()
+      .padStart(2, "0")}-${d.toString().padStart(2, "0")}`;
+    days.push({
+      date: dateStr,
+      agentes: mesData[dateStr] || [],
+    });
+  }
+
+  const semanas = [];
+  for (let i = 0; i < days.length; i += 7) {
+    semanas.push(days.slice(i, i + 7));
+  }
+
+  const nombreMes = firstDay.toLocaleDateString("es-AR", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">📅 Guardias {clave}</h1>
-      {dias.length === 0 ? (
-        <p>No hay guardias cargadas para este mes.</p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {dias.map((dia) => (
-            <div
-              key={dia}
-              className="border rounded p-2 bg-white shadow-sm hover:shadow-md"
-            >
-              <h2 className="font-semibold">
-                {new Date(dia).toLocaleDateString("es-AR", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                })}
-              </h2>
-              <ul className="list-disc list-inside text-gray-700">
-                {mesData[dia].map((agente, idx) => (
-                  <li key={idx}>{agente}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
+      <h1 className="text-2xl font-bold mb-4 text-center">
+        📅 Guardias – {nombreMes}
+      </h1>
+      <div className="grid grid-cols-7 gap-2 text-center font-semibold">
+        <div>Lun</div>
+        <div>Mar</div>
+        <div>Mié</div>
+        <div>Jue</div>
+        <div>Vie</div>
+        <div>Sáb</div>
+        <div>Dom</div>
+      </div>
+      {semanas.map((semana, i) => (
+        <div key={i} className="grid grid-cols-7 gap-2 text-sm mb-2">
+          {semana.map((dia, j) =>
+            dia ? (
+              <div
+                key={j}
+                className="border rounded p-1 bg-white shadow-sm h-24 flex flex-col"
+              >
+                <div className="font-bold">{new Date(dia.date).getDate()}</div>
+                <div className="text-xs flex-1">
+                  {dia.agentes.map((a, idx) => (
+                    <div key={idx}>{a}</div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div key={j}></div>
+            )
+          )}
         </div>
-      )}
+      ))}
     </div>
   );
 }
