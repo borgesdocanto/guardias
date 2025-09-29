@@ -1,1 +1,5 @@
 
+echo "" > public/.gitkeep
+git add public/.gitkeep
+git commit -m "chore: add public folder"
+git push
