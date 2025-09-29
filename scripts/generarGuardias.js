@@ -27,16 +27,18 @@ async function getFeriados(year) {
 async function getAgentes() {
   const res = await fetch(SHEET_URL);
   const csv = await res.text();
-  const rows = csv.split("\n").map(r => r.split(",").map(c => c.trim()));
+
+  // Normalizamos saltos de línea (puede venir con \r\n)
+  const rows = csv.split(/\r?\n/).map(r => r.split(",").map(c => c.trim()));
 
   rows.shift(); // quitar encabezado
 
   const agentes = rows
     .filter(r => {
-      const check = (r[0] || "").toUpperCase();
-      return check === "TRUE" || check === "SI" || check === "1"; // aceptar varias formas
+      const check = (r[0] || "").replace(/"/g, "").toUpperCase();
+      return check && check !== "FALSE"; // cualquier valor distinto de vacío o FALSE
     })
-    .map(r => r[1]) // Col B = nombre
+    .map(r => r[1]?.replace(/"/g, "").trim()) // Col B = nombre limpio
     .filter(Boolean);
 
   return agentes;
