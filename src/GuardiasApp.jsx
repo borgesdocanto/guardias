@@ -1,145 +1,123 @@
 // src/GuardiasApp.jsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 function GuardiasApp() {
   const [guardias, setGuardias] = useState({});
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [mesActual, setMesActual] = useState(new Date());
 
   useEffect(() => {
     fetch("/guardias.json")
       .then((res) => res.json())
-      .then((data) => setGuardias(data));
+      .then((data) => setGuardias(data))
+      .catch((err) => console.error("Error cargando guardias:", err));
   }, []);
 
-  const formatMonthKey = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}`;
+  const cambiarMes = (delta) => {
+    setMesActual((prev) => {
+      const nuevo = new Date(prev);
+      nuevo.setMonth(nuevo.getMonth() + delta);
+      return nuevo;
+    });
   };
 
-  const handlePrevMonth = () => {
-    const prev = new Date(currentMonth);
-    prev.setMonth(prev.getMonth() - 1);
-    setCurrentMonth(prev);
-  };
+  const renderCalendario = () => {
+    const year = mesActual.getFullYear();
+    const month = mesActual.getMonth(); // 0-11
+    const diasEnMes = new Date(year, month + 1, 0).getDate();
+    const primerDiaSemana = new Date(year, month, 1).getDay(); // 0=Dom
 
-  const handleNextMonth = () => {
-    const next = new Date(currentMonth);
-    next.setMonth(next.getMonth() + 1);
-    setCurrentMonth(next);
-  };
+    // Normalizamos: queremos Lun=0, Dom=6
+    const offset = (primerDiaSemana + 6) % 7;
 
-  const renderCalendar = () => {
-    const monthKey = formatMonthKey(currentMonth);
-    const monthData = guardias[monthKey] || {};
-    const daysInMonth = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1,
-      0
-    ).getDate();
+    const clavesMes = `${year}-${String(month + 1).padStart(2, "0")}`;
+    const guardiasMes = guardias[clavesMes] || {};
 
-    // ¿En qué día empieza el mes? (0=Domingo, 1=Lunes...)
-    const startDay = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      1
-    ).getDay();
-
-    // Ajustamos para que arranque en Lunes (ISO)
-    const offset = startDay === 0 ? 6 : startDay - 1;
-
-    const weeks = [];
-    let week = [];
-
-    // huecos antes del día 1
+    const celdas = [];
     for (let i = 0; i < offset; i++) {
-      week.push(null);
+      celdas.push(null); // días vacíos antes del 1
+    }
+    for (let dia = 1; dia <= diasEnMes; dia++) {
+      const claveDia = `${year}-${String(month + 1).padStart(2, "0")}-${String(
+        dia
+      ).padStart(2, "0")}`;
+      celdas.push({
+        dia,
+        nombres: guardiasMes[claveDia] || [],
+      });
     }
 
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateKey = `${monthKey}-${String(day).padStart(2, "0")}`;
-      week.push({ day, guardias: monthData[dateKey] || [] });
-
-      if (week.length === 7) {
-        weeks.push(week);
-        week = [];
-      }
-    }
-
-    // completar con huecos al final
-    if (week.length > 0) {
-      while (week.length < 7) {
-        week.push(null);
-      }
-      weeks.push(week);
+    // dividir en semanas
+    const semanas = [];
+    for (let i = 0; i < celdas.length; i += 7) {
+      semanas.push(celdas.slice(i, i + 7));
     }
 
     return (
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-center mb-4">
-          {currentMonth.toLocaleString("es-ES", {
-            month: "long",
-            year: "numeric",
-          })}
-        </h2>
-        <div className="grid grid-cols-7 text-center font-semibold">
-          <div>Lun</div>
-          <div>Mar</div>
-          <div>Mié</div>
-          <div>Jue</div>
-          <div>Vie</div>
-          <div>Sáb</div>
-          <div>Dom</div>
-        </div>
-        {weeks.map((w, i) => (
-          <div key={i} className="grid grid-cols-7 border-t">
-            {w.map((d, j) => (
-              <div
-                key={j}
-                className="h-24 border p-1 text-sm flex flex-col items-start"
-              >
-                {d ? (
-                  <>
-                    <span className="font-bold text-gray-700">{d.day}</span>
-                    <div className="text-xs mt-1 space-y-0.5">
-                      {d.guardias.length > 0
-                        ? d.guardias.map((g, idx) => (
-                            <div key={idx} className="truncate">
-                              {g}
-                            </div>
-                          ))
-                        : "-"}
-                    </div>
-                  </>
-                ) : (
-                  <span className="text-gray-300">.</span>
-                )}
-              </div>
+      <table className="border-collapse border border-gray-400 w-full text-center">
+        <thead>
+          <tr className="bg-gray-200">
+            {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d) => (
+              <th key={d} className="border border-gray-400 p-2">
+                {d}
+              </th>
             ))}
-          </div>
-        ))}
-      </div>
+          </tr>
+        </thead>
+        <tbody>
+          {semanas.map((semana, idx) => (
+            <tr key={idx}>
+              {semana.map((celda, i) => (
+                <td
+                  key={i}
+                  className="border border-gray-300 align-top h-24 w-32 p-1"
+                >
+                  {celda ? (
+                    <>
+                      <div className="font-bold text-sm text-gray-700">
+                        {celda.dia}
+                      </div>
+                      <ul className="text-xs text-left">
+                        {celda.nombres.length > 0 ? (
+                          celda.nombres.map((n, j) => <li key={j}>{n}</li>)
+                        ) : (
+                          <li>-</li>
+                        )}
+                      </ul>
+                    </>
+                  ) : null}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     );
   };
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4 text-center">Sistema de Guardias</h1>
-      <div className="flex justify-between mb-4">
+      <h1 className="text-xl font-bold mb-4">Sistema de Guardias</h1>
+      <div className="flex justify-between mb-2">
         <button
-          onClick={handlePrevMonth}
-          className="px-3 py-1 bg-gray-200 rounded"
+          onClick={() => cambiarMes(-1)}
+          className="bg-blue-500 text-white px-2 py-1 rounded"
         >
-          ◀ Mes Anterior
+          ◀️ Mes Anterior
         </button>
+        <h2 className="font-semibold">
+          {mesActual.toLocaleDateString("es-AR", {
+            month: "long",
+            year: "numeric",
+          })}
+        </h2>
         <button
-          onClick={handleNextMonth}
-          className="px-3 py-1 bg-gray-200 rounded"
+          onClick={() => cambiarMes(1)}
+          className="bg-blue-500 text-white px-2 py-1 rounded"
         >
-          Mes Siguiente ▶
+          Mes Siguiente ▶️
         </button>
       </div>
-      {renderCalendar()}
+      {renderCalendario()}
     </div>
   );
 }
