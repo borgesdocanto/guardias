@@ -1,129 +1,147 @@
 // src/GuardiasApp.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const GuardiasApp = () => {
+function GuardiasApp() {
   const [guardias, setGuardias] = useState({});
-  const [mesActual, setMesActual] = useState(() => {
-    const hoy = new Date();
-    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
-  });
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Cargar el JSON de guardias
   useEffect(() => {
     fetch("/guardias.json")
       .then((res) => res.json())
-      .then((data) => setGuardias(data))
-      .catch((err) => console.error("Error cargando guardias.json", err));
+      .then((data) => setGuardias(data));
   }, []);
 
-  // Helpers
-  const obtenerDiasDelMes = (year, month) => {
-    const date = new Date(year, month, 1);
-    const days = [];
-    while (date.getMonth() === month) {
-      days.push(new Date(date));
-      date.setDate(date.getDate() + 1);
+  const formatMonthKey = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  };
+
+  const handlePrevMonth = () => {
+    const prev = new Date(currentMonth);
+    prev.setMonth(prev.getMonth() - 1);
+    setCurrentMonth(prev);
+  };
+
+  const handleNextMonth = () => {
+    const next = new Date(currentMonth);
+    next.setMonth(next.getMonth() + 1);
+    setCurrentMonth(next);
+  };
+
+  const renderCalendar = () => {
+    const monthKey = formatMonthKey(currentMonth);
+    const monthData = guardias[monthKey] || {};
+    const daysInMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
+      0
+    ).getDate();
+
+    // ¿En qué día empieza el mes? (0=Domingo, 1=Lunes...)
+    const startDay = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      1
+    ).getDay();
+
+    // Ajustamos para que arranque en Lunes (ISO)
+    const offset = startDay === 0 ? 6 : startDay - 1;
+
+    const weeks = [];
+    let week = [];
+
+    // huecos antes del día 1
+    for (let i = 0; i < offset; i++) {
+      week.push(null);
     }
-    return days;
-  };
 
-  const mostrarMes = (offset = 0) => {
-    const [y, m] = mesActual.split("-").map(Number);
-    const fecha = new Date(y, m - 1 + offset, 1);
-    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
-  };
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateKey = `${monthKey}-${String(day).padStart(2, "0")}`;
+      week.push({ day, guardias: monthData[dateKey] || [] });
 
-  const cambiarMes = (offset) => {
-    setMesActual(mostrarMes(offset));
-  };
+      if (week.length === 7) {
+        weeks.push(week);
+        week = [];
+      }
+    }
 
-  // Render calendario
-  const renderCalendario = (mes) => {
-    const [year, month] = mes.split("-").map(Number);
-    const dias = obtenerDiasDelMes(year, month - 1);
-
-    // Primer día de la semana (lunes=1, domingo=0)
-    const inicioSemana = (dias[0].getDay() + 6) % 7;
-    const celdasVaciasInicio = Array(inicioSemana).fill(null);
-
-    const totalCeldas = celdasVaciasInicio.length + dias.length;
-    const celdasExtra = (7 - (totalCeldas % 7)) % 7;
-
-    const celdas = [...celdasVaciasInicio, ...dias, ...Array(celdasExtra).fill(null)];
+    // completar con huecos al final
+    if (week.length > 0) {
+      while (week.length < 7) {
+        week.push(null);
+      }
+      weeks.push(week);
+    }
 
     return (
-      <div className="grid grid-cols-7 gap-2">
-        {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d) => (
-          <div key={d} className="font-bold text-center text-gray-700">
-            {d}
-          </div>
-        ))}
-
-        {celdas.map((dia, idx) => {
-          if (!dia) return <div key={idx} className="border rounded-lg h-24 bg-gray-50"></div>;
-
-          const fechaKey = `${year}-${String(month).padStart(2, "0")}-${String(
-            dia.getDate()
-          ).padStart(2, "0")}`;
-
-          const guardiasDia = guardias[mes]?.[fechaKey] || [];
-
-          return (
-            <div
-              key={idx}
-              className="border rounded-lg h-24 p-1 bg-white flex flex-col text-xs"
-            >
-              <div className="font-semibold text-gray-800 text-right">{dia.getDate()}</div>
-              <div className="mt-1 flex-1 space-y-1 overflow-hidden">
-                {guardiasDia.length > 0 ? (
-                  guardiasDia.map((g, i) => (
-                    <div key={i} className="truncate text-gray-600">
-                      {g}
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-center mb-4">
+          {currentMonth.toLocaleString("es-ES", {
+            month: "long",
+            year: "numeric",
+          })}
+        </h2>
+        <div className="grid grid-cols-7 text-center font-semibold">
+          <div>Lun</div>
+          <div>Mar</div>
+          <div>Mié</div>
+          <div>Jue</div>
+          <div>Vie</div>
+          <div>Sáb</div>
+          <div>Dom</div>
+        </div>
+        {weeks.map((w, i) => (
+          <div key={i} className="grid grid-cols-7 border-t">
+            {w.map((d, j) => (
+              <div
+                key={j}
+                className="h-24 border p-1 text-sm flex flex-col items-start"
+              >
+                {d ? (
+                  <>
+                    <span className="font-bold text-gray-700">{d.day}</span>
+                    <div className="text-xs mt-1 space-y-0.5">
+                      {d.guardias.length > 0
+                        ? d.guardias.map((g, idx) => (
+                            <div key={idx} className="truncate">
+                              {g}
+                            </div>
+                          ))
+                        : "-"}
                     </div>
-                  ))
+                  </>
                 ) : (
-                  <div className="text-gray-300 italic">-</div>
+                  <span className="text-gray-300">.</span>
                 )}
               </div>
-            </div>
-          );
-        })}
+            ))}
+          </div>
+        ))}
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold text-center mb-6 text-[#AA0000]">
-          Sistema de Guardias
-        </h1>
-
-        <div className="flex justify-between mb-4">
-          <button
-            onClick={() => cambiarMes(-1)}
-            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
-            ◀ Mes Anterior
-          </button>
-          <h2 className="text-xl font-semibold">
-            {new Date(mesActual + "-01").toLocaleDateString("es-AR", {
-              month: "long",
-              year: "numeric",
-            })}
-          </h2>
-          <button
-            onClick={() => cambiarMes(1)}
-            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
-            Mes Siguiente ▶
-          </button>
-        </div>
-
-        {renderCalendario(mesActual)}
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4 text-center">Sistema de Guardias</h1>
+      <div className="flex justify-between mb-4">
+        <button
+          onClick={handlePrevMonth}
+          className="px-3 py-1 bg-gray-200 rounded"
+        >
+          ◀ Mes Anterior
+        </button>
+        <button
+          onClick={handleNextMonth}
+          className="px-3 py-1 bg-gray-200 rounded"
+        >
+          Mes Siguiente ▶
+        </button>
       </div>
+      {renderCalendar()}
     </div>
   );
-};
+}
 
 export default GuardiasApp;
