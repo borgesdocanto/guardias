@@ -1,4 +1,69 @@
 {
-  "parejas": {},
-  "diasPorAgente": {}
+  "parejas": {
+    "Hernan Dinter|Leandro Lucero": 2,
+    "Daniela Gonzalez|Tobías Martinez": 2,
+    "Analia Argüello|Matías Alvarez": 3,
+    "Daniela Gonzalez|Leandro Lucero": 3,
+    "Hernan Dinter|Tobías Martinez": 2,
+    "Daniela Gonzalez|Matías Alvarez": 1,
+    "Analia Argüello|Leandro Lucero": 1,
+    "Hernan Dinter|Matías Alvarez": 2,
+    "Analia Argüello|Daniela Gonzalez": 1,
+    "Leandro Lucero|Tobías Martinez": 1,
+    "Analia Argüello|Tobías Martinez": 2,
+    "Leandro Lucero|Matías Alvarez": 1,
+    "Daniela Gonzalez|Hernan Dinter": 1,
+    "Analia Argüello|Hernan Dinter": 1,
+    "Matías Alvarez|Tobías Martinez": 1
+  },
+  "diasPorAgente": {
+    "Leandro Lucero": {
+      "1": 1,
+      "2": 1,
+      "3": 2,
+      "4": 2,
+      "5": 1,
+      "6": 1
+    },
+    "Hernan Dinter": {
+      "1": 1,
+      "2": 1,
+      "3": 1,
+      "4": 2,
+      "5": 1,
+      "6": 2
+    },
+    "Daniela Gonzalez": {
+      "1": 1,
+      "2": 1,
+      "3": 2,
+      "4": 1,
+      "5": 2,
+      "6": 1
+    },
+    "Tobías Martinez": {
+      "1": 1,
+      "2": 2,
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 1
+    },
+    "Matías Alvarez": {
+      "1": 1,
+      "2": 2,
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 2
+    },
+    "Analia Argüello": {
+      "1": 1,
+      "2": 1,
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 3
+    }
+  }
 }
