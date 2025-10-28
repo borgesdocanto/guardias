@@ -17,7 +17,6 @@ function GuardiasApp() {
   const guardiasMes = guardias[mesClave] || {};
 
   const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-
   const inicioMes = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
   const finMes = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0);
   const primerDiaSemana = (inicioMes.getDay() + 6) % 7;
@@ -29,6 +28,11 @@ function GuardiasApp() {
 
   const handleNextMonth = () => {
     setFecha(new Date(fecha.getFullYear(), fecha.getMonth() + 1, 1));
+  };
+
+  // Función para detectar si es feriado
+  const esFeriado = (guardiasDia) => {
+    return guardiasDia.length > 0 && guardiasDia[0].startsWith("Feriado:");
   };
 
   const renderCeldas = () => {
@@ -48,21 +52,36 @@ function GuardiasApp() {
         fecha.getMonth() + 1
       ).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       const guardiasDia = guardiasMes[claveDia] || [];
+      const isFeriado = esFeriado(guardiasDia);
 
       celdas.push(
         <div
           key={d}
-          className="border rounded-xl p-3 min-h-[120px] bg-white hover:bg-gray-50 transition flex flex-col"
+          className={`border rounded-xl p-3 min-h-[120px] transition flex flex-col ${
+            isFeriado
+              ? "bg-black text-white hover:bg-gray-900"
+              : "bg-white hover:bg-gray-50"
+          }`}
         >
-          <div className="font-bold text-gray-800 mb-2">{d}</div>
+          <div
+            className={`font-bold mb-2 ${
+              isFeriado ? "text-white" : "text-gray-800"
+            }`}
+          >
+            {d}
+          </div>
           <div className="flex flex-col gap-1">
             {guardiasDia.length > 0 ? (
               guardiasDia.map((g, i) => (
                 <div
                   key={i}
-                  className="bg-marca/10 text-marca px-2 py-1 rounded-md text-sm font-medium"
+                  className={`px-2 py-1 rounded-md text-sm font-medium ${
+                    isFeriado
+                      ? "bg-white/20 text-white"
+                      : "bg-marca/10 text-marca"
+                  }`}
                 >
-                  {g}
+                  {isFeriado ? g.replace("Feriado: ", "") : g}
                 </div>
               ))
             ) : (
@@ -89,12 +108,14 @@ function GuardiasApp() {
         >
           ◀ Mes Anterior
         </button>
+
         <h2 className="text-3xl font-bold capitalize">
           {fecha.toLocaleDateString("es-ES", {
             year: "numeric",
             month: "long",
           })}
         </h2>
+
         <button
           onClick={handleNextMonth}
           className="flex items-center gap-2 bg-marca text-white px-6 py-3 rounded-lg shadow hover:bg-red-800 transition text-lg"
