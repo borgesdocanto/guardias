@@ -17,10 +17,15 @@ async function getFeriados(year) {
     const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/AR`);
     if (!res.ok) throw new Error("No se pudo acceder a la API de feriados");
     const data = await res.json();
-    return data.map(f => f.date);
+    // Devolver un objeto con fecha como key y nombre como value
+    const feriadosMap = {};
+    data.forEach(f => {
+      feriadosMap[f.date] = f.localName || f.name;
+    });
+    return feriadosMap;
   } catch (e) {
     console.warn("⚠️ No se pudieron cargar feriados, seguimos sin ellos.");
-    return [];
+    return {};
   }
 }
 
@@ -61,15 +66,28 @@ function getProximoMes() {
 
 // 📊 Cargar historial de parejas y días
 function cargarHistorial() {
-  if (fs.existsSync(HISTORIAL_FILE)) {
-    return JSON.parse(fs.readFileSync(HISTORIAL_FILE, "utf8"));
+  try {
+    if (fs.existsSync(HISTORIAL_FILE)) {
+      return JSON.parse(fs.readFileSync(HISTORIAL_FILE, "utf8"));
+    }
+  } catch (e) {
+    console.warn("⚠️ Error leyendo historial, creando uno nuevo");
   }
   return { parejas: {}, diasPorAgente: {} };
 }
 
 // 💾 Guardar historial
 function guardarHistorial(historial) {
-  fs.writeFileSync(HISTORIAL_FILE, JSON.stringify(historial, null, 2));
+  try {
+    const dir = path.dirname(HISTORIAL_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(HISTORIAL_FILE, JSON.stringify(historial, null, 2));
+    console.log("✅ Historial actualizado");
+  } catch (e) {
+    console.error("❌ Error guardando historial:", e.message);
+  }
 }
 
 // 🔑 Generar clave única para pareja (ordenada alfabéticamente)
@@ -92,21 +110,23 @@ function getScoreDia(agente, diaSemana, historial) {
 }
 
 // 🎲 Asignar guardias con rotación inteligente
-function generarGuardias(agentes, feriados, mes, anio) {
+function generarGuardias(agentes, feriadosMap, mes, anio) {
   const inicio = new Date(anio, mes, 1);
   const fin = new Date(anio, mes + 1, 0);
   const diasMes = [];
   
-  // Recopilar todos los días hábiles del mes
+  // Recopilar todos los días del mes (incluyendo feriados)
   for (let d = new Date(inicio); d <= fin; d.setDate(d.getDate() + 1)) {
     const iso = d.toISOString().split("T")[0];
-    const esFeriado = feriados.includes(iso);
     const diaSemana = d.getDay();
     
     if (diaSemana === 0) continue; // excluir domingos
-    if (esFeriado) continue;
     
-    diasMes.push(new Date(d));
+    const esFeriado = feriadosMap[iso];
+    diasMes.push({
+      fecha: new Date(d),
+      feriado: esFeriado || null
+    });
   }
   
   // Cargar historial
@@ -121,8 +141,14 @@ function generarGuardias(agentes, feriados, mes, anio) {
   
   // Asignar guardias día por día
   diasMes.forEach(dia => {
-    const fechaStr = dia.toISOString().split("T")[0];
-    const diaSemana = dia.getDay();
+    const fechaStr = dia.fecha.toISOString().split("T")[0];
+    const diaSemana = dia.fecha.getDay();
+    
+    // Si es feriado, marcar como tal sin asignar agentes
+    if (dia.feriado) {
+      guardias[fechaStr] = [`Feriado: ${dia.feriado}`];
+      return;
+    }
     
     // Encontrar la mejor pareja para este día
     let mejorPareja = null;
@@ -206,7 +232,7 @@ async function main() {
   
   const { mes, anio } = getProximoMes();
   const agentes = await getAgentes();
-  const feriados = await getFeriados(anio);
+  const feriadosMap = await getFeriados(anio);
   
   if (agentes.length === 0) {
     console.error("❌ No hay agentes disponibles en el sheet");
@@ -214,8 +240,9 @@ async function main() {
   }
   
   console.log("✅ Agentes detectados:", agentes);
+  console.log(`📅 Feriados detectados: ${Object.keys(feriadosMap).length}`);
   
-  const guardias = generarGuardias(agentes, feriados, mes, anio);
+  const guardias = generarGuardias(agentes, feriadosMap, mes, anio);
   
   // Leer guardias existentes
   let data = {};
