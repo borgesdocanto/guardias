@@ -112,99 +112,102 @@
   "2025-11": {
     "2025-11-01": [
       "Leandro Lucero",
-      "Hernan Dinter"
+      "Tobías Martinez"
     ],
     "2025-11-03": [
-      "Daniela Gonzalez",
-      "Tobías Martinez"
+      "Hernan Dinter",
+      "Daniela Gonzalez"
     ],
     "2025-11-04": [
       "Matías Alvarez",
       "Analia Argüello"
     ],
     "2025-11-05": [
-      "Leandro Lucero",
-      "Daniela Gonzalez"
-    ],
-    "2025-11-06": [
       "Hernan Dinter",
-      "Tobías Martinez"
-    ],
-    "2025-11-07": [
-      "Matías Alvarez",
       "Analia Argüello"
     ],
-    "2025-11-08": [
+    "2025-11-06": [
       "Daniela Gonzalez",
       "Matías Alvarez"
+    ],
+    "2025-11-07": [
+      "Leandro Lucero",
+      "Tobías Martinez"
+    ],
+    "2025-11-08": [
+      "Hernan Dinter",
+      "Daniela Gonzalez"
     ],
     "2025-11-10": [
       "Leandro Lucero",
-      "Analia Argüello"
+      "Matías Alvarez"
     ],
     "2025-11-11": [
-      "Hernan Dinter",
-      "Tobías Martinez"
+      "Tobías Martinez",
+      "Analia Argüello"
     ],
     "2025-11-12": [
-      "Hernan Dinter",
+      "Tobías Martinez",
       "Matías Alvarez"
     ],
     "2025-11-13": [
-      "Daniela Gonzalez",
+      "Leandro Lucero",
       "Analia Argüello"
     ],
     "2025-11-14": [
-      "Leandro Lucero",
-      "Tobías Martinez"
+      "Hernan Dinter",
+      "Daniela Gonzalez"
     ],
     "2025-11-15": [
+      "Leandro Lucero",
+      "Matías Alvarez"
+    ],
+    "2025-11-17": [
       "Tobías Martinez",
       "Analia Argüello"
     ],
-    "2025-11-17": [
-      "Hernan Dinter",
-      "Matías Alvarez"
-    ],
     "2025-11-18": [
-      "Leandro Lucero",
+      "Hernan Dinter",
       "Daniela Gonzalez"
     ],
     "2025-11-19": [
-      "Tobías Martinez",
+      "Daniela Gonzalez",
       "Analia Argüello"
     ],
     "2025-11-20": [
-      "Leandro Lucero",
-      "Matías Alvarez"
+      "Hernan Dinter",
+      "Tobías Martinez"
     ],
     "2025-11-21": [
-      "Hernan Dinter",
-      "Daniela Gonzalez"
-    ],
-    "2025-11-22": [
-      "Hernan Dinter",
-      "Analia Argüello"
-    ],
-    "2025-11-25": [
-      "Tobías Martinez",
+      "Leandro Lucero",
       "Matías Alvarez"
     ],
-    "2025-11-26": [
-      "Leandro Lucero",
-      "Daniela Gonzalez"
-    ],
-    "2025-11-27": [
-      "Leandro Lucero",
-      "Hernan Dinter"
-    ],
-    "2025-11-28": [
+    "2025-11-22": [
       "Daniela Gonzalez",
       "Tobías Martinez"
     ],
-    "2025-11-29": [
+    "2025-11-24": [
+      "Feriado: Día de la Soberanía Nacional"
+    ],
+    "2025-11-25": [
+      "Leandro Lucero",
+      "Hernan Dinter"
+    ],
+    "2025-11-26": [
       "Matías Alvarez",
       "Analia Argüello"
+    ],
+    "2025-11-27": [
+      "Daniela Gonzalez",
+      "Matías Alvarez"
+    ],
+    "2025-11-28": [
+      "Hernan Dinter",
+      "Analia Argüello"
+    ],
+    "2025-11-29": [
+      "Leandro Lucero",
+      "Tobías Martinez"
     ]
   }
 }
