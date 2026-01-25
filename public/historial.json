@@ -1,69 +1,69 @@
 {
   "parejas": {
-    "Hernan Dinter|Leandro Lucero": 8,
-    "Daniela Gonzalez|Tobías Martinez": 8,
-    "Analia Argüello|Matías Alvarez": 10,
-    "Daniela Gonzalez|Leandro Lucero": 9,
-    "Hernan Dinter|Tobías Martinez": 8,
-    "Daniela Gonzalez|Matías Alvarez": 7,
-    "Analia Argüello|Leandro Lucero": 7,
-    "Hernan Dinter|Matías Alvarez": 9,
-    "Analia Argüello|Daniela Gonzalez": 7,
-    "Leandro Lucero|Tobías Martinez": 9,
-    "Analia Argüello|Tobías Martinez": 9,
-    "Leandro Lucero|Matías Alvarez": 7,
-    "Daniela Gonzalez|Hernan Dinter": 9,
-    "Analia Argüello|Hernan Dinter": 8,
-    "Matías Alvarez|Tobías Martinez": 8
+    "Hernan Dinter|Leandro Lucero": 9,
+    "Daniela Gonzalez|Tobías Martinez": 9,
+    "Analia Argüello|Matías Alvarez": 11,
+    "Daniela Gonzalez|Leandro Lucero": 10,
+    "Hernan Dinter|Tobías Martinez": 10,
+    "Daniela Gonzalez|Matías Alvarez": 9,
+    "Analia Argüello|Leandro Lucero": 9,
+    "Hernan Dinter|Matías Alvarez": 11,
+    "Analia Argüello|Daniela Gonzalez": 9,
+    "Leandro Lucero|Tobías Martinez": 10,
+    "Analia Argüello|Tobías Martinez": 11,
+    "Leandro Lucero|Matías Alvarez": 9,
+    "Daniela Gonzalez|Hernan Dinter": 10,
+    "Analia Argüello|Hernan Dinter": 9,
+    "Matías Alvarez|Tobías Martinez": 9
   },
   "diasPorAgente": {
     "Leandro Lucero": {
-      "1": 5,
-      "2": 7,
-      "3": 7,
-      "4": 6,
-      "5": 7,
-      "6": 8
-    },
-    "Hernan Dinter": {
-      "1": 5,
-      "2": 7,
-      "3": 7,
-      "4": 7,
-      "5": 7,
+      "1": 6,
+      "2": 8,
+      "3": 8,
+      "4": 8,
+      "5": 8,
       "6": 9
     },
+    "Hernan Dinter": {
+      "1": 6,
+      "2": 8,
+      "3": 8,
+      "4": 8,
+      "5": 8,
+      "6": 11
+    },
     "Daniela Gonzalez": {
-      "1": 5,
-      "2": 7,
-      "3": 6,
+      "1": 7,
+      "2": 8,
+      "3": 8,
       "4": 7,
-      "5": 7,
-      "6": 8
+      "5": 8,
+      "6": 9
     },
     "Tobías Martinez": {
-      "1": 6,
-      "2": 7,
-      "3": 8,
-      "4": 6,
-      "5": 7,
-      "6": 8
+      "1": 7,
+      "2": 8,
+      "3": 9,
+      "4": 8,
+      "5": 8,
+      "6": 9
     },
     "Matías Alvarez": {
-      "1": 6,
-      "2": 7,
-      "3": 7,
-      "4": 6,
-      "5": 7,
-      "6": 8
+      "1": 7,
+      "2": 8,
+      "3": 8,
+      "4": 7,
+      "5": 10,
+      "6": 9
     },
     "Analia Argüello": {
       "1": 7,
-      "2": 7,
-      "3": 7,
-      "4": 6,
-      "5": 7,
-      "6": 7
+      "2": 8,
+      "3": 9,
+      "4": 8,
+      "5": 8,
+      "6": 9
     }
   }
 }
