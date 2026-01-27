@@ -1,69 +1,80 @@
 {
   "parejas": {
-    "Hernan Dinter|Leandro Lucero": 9,
-    "Daniela Gonzalez|Tobías Martinez": 9,
-    "Analia Argüello|Matías Alvarez": 11,
-    "Daniela Gonzalez|Leandro Lucero": 10,
+    "Hernan Dinter|Leandro Lucero": 12,
+    "Daniela Gonzalez|Tobías Martinez": 11,
+    "Analia Argüello|Matías Alvarez": 12,
+    "Daniela Gonzalez|Leandro Lucero": 11,
     "Hernan Dinter|Tobías Martinez": 10,
-    "Daniela Gonzalez|Matías Alvarez": 9,
+    "Daniela Gonzalez|Matías Alvarez": 10,
     "Analia Argüello|Leandro Lucero": 9,
     "Hernan Dinter|Matías Alvarez": 11,
-    "Analia Argüello|Daniela Gonzalez": 9,
+    "Analia Argüello|Daniela Gonzalez": 10,
     "Leandro Lucero|Tobías Martinez": 10,
-    "Analia Argüello|Tobías Martinez": 11,
-    "Leandro Lucero|Matías Alvarez": 9,
+    "Analia Argüello|Tobías Martinez": 13,
+    "Leandro Lucero|Matías Alvarez": 10,
     "Daniela Gonzalez|Hernan Dinter": 10,
-    "Analia Argüello|Hernan Dinter": 9,
-    "Matías Alvarez|Tobías Martinez": 9
+    "Analia Argüello|Hernan Dinter": 11,
+    "Matías Alvarez|Tobías Martinez": 9,
+    "Leandro Lucero|Sandra Ruggeri": 1,
+    "Sandra Ruggeri|Tobías Martinez": 2,
+    "Matías Alvarez|Sandra Ruggeri": 3,
+    "Hernan Dinter|Sandra Ruggeri": 1,
+    "Daniela Gonzalez|Sandra Ruggeri": 1
   },
   "diasPorAgente": {
     "Leandro Lucero": {
-      "1": 6,
-      "2": 8,
-      "3": 8,
-      "4": 8,
-      "5": 8,
-      "6": 9
+      "1": 7,
+      "2": 9,
+      "3": 9,
+      "4": 9,
+      "5": 9,
+      "6": 10
     },
     "Hernan Dinter": {
-      "1": 6,
-      "2": 8,
-      "3": 8,
-      "4": 8,
-      "5": 8,
+      "1": 7,
+      "2": 9,
+      "3": 10,
+      "4": 9,
+      "5": 9,
       "6": 11
     },
     "Daniela Gonzalez": {
       "1": 7,
-      "2": 8,
-      "3": 8,
+      "2": 9,
+      "3": 10,
       "4": 7,
-      "5": 8,
-      "6": 9
+      "5": 9,
+      "6": 11
     },
     "Tobías Martinez": {
       "1": 7,
-      "2": 8,
+      "2": 9,
       "3": 9,
-      "4": 8,
-      "5": 8,
-      "6": 9
+      "4": 9,
+      "5": 11,
+      "6": 10
     },
     "Matías Alvarez": {
-      "1": 7,
-      "2": 8,
-      "3": 8,
-      "4": 7,
+      "1": 8,
+      "2": 9,
+      "3": 9,
+      "4": 9,
       "5": 10,
-      "6": 9
+      "6": 10
     },
     "Analia Argüello": {
-      "1": 7,
-      "2": 8,
+      "1": 8,
+      "2": 9,
       "3": 9,
-      "4": 8,
-      "5": 8,
-      "6": 9
+      "4": 9,
+      "5": 10,
+      "6": 10
+    },
+    "Sandra Ruggeri": {
+      "1": 2,
+      "3": 2,
+      "4": 2,
+      "6": 2
     }
   }
 }
